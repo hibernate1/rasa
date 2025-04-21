@@ -1,0 +1,7 @@
+version: "3.1"
+
+stories:
+- story: Ask a question from PDF
+  steps:
+    - intent: ask_question
+    - action: action_query_pdf_knowledge

@@ -1,0 +1,118 @@
+
+What is langchain 
+Chromadb 
+
+
+Rasa + LangChain + ChromaDB
+
+so the project architecture are
+
+
+rasa_pdf_bot/
+├── actions/
+│   └── actions.py           ← Custom action using LangChain + Chroma
+├── data/
+│   └── rules.yml            ← Rasa rule for triggering the action
+├── domain.yml               ← Intents, actions, responses
+├── config.yml               ← Rasa pipeline (keep default or simple)
+├── endpoints.yml            ← Enable action server
+├── sample.pdf               ← A sample PDF (you provide)
+
+
+
+domain.yml
+
+version: "3.1"
+
+intents:
+  - ask_question
+
+actions:
+  - action_query_pdf_knowledge
+
+responses:
+  utter_ask_question:
+    - text: "Sure, what would you like to know from the document?"
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
+
+
+data/rules.yml
+
+version: "3.1"
+
+rules:
+- rule: Answer PDF-based question
+  steps:
+    - intent: ask_question
+    - action: action_query_pdf_knowledge
+📄 endpoints.yml
+
+action_endpoint:
+  url: "http://localhost:5055/webhook"
+
+
+
+actions/actions.py
+
+
+
+from rasa_sdk import Action, Tracker
+from rasa_sdk.executor import CollectingDispatcher
+from langchain.vectorstores import Chroma
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import CharacterTextSplitter
+import os
+
+class ActionQueryPdfKnowledge(Action):
+
+    def name(self):
+        return "action_query_pdf_knowledge"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: dict):
+
+        query = tracker.latest_message.get("text")
+
+        # Load and chunk the PDF
+        loader = PyPDFLoader("sample.pdf")
+        pages = loader.load()
+        text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+        docs = text_splitter.split_documents(pages)
+
+        # Embed using HuggingFace
+        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+        # Setup ChromaDB
+        db_dir = "./chroma_storage"
+        db = Chroma.from_documents(docs, embeddings, persist_directory=db_dir)
+        db.persist()
+
+        # Search for the answer
+        results = db.similarity_search(query, k=1)
+        answer = results[0].page_content if results else "Sorry, I couldn't find anything relevant in the document."
+
+        dispatcher.utter_message(text=answer)
+        return []
+
+
+
+  
+
+  then 
+
+  rasa train
+  rasa run actions
+
+  rasa shell
+
+  DIETClassifier what is ?     
+
+
+
+
+

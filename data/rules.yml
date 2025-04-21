@@ -1,0 +1,21 @@
+version: "3.1"
+
+rules:
+- rule: Answer PDF-based question
+  steps:
+    - intent: ask_question
+    - action: action_query_pdf_knowledge
+- rule: Greet the user
+  steps:
+    - intent: greet
+    - action: utter_greet
+
+- rule: Respond to 'How are you'
+  steps:
+    - intent: how_are_you
+    - action: utter_how_are_you
+
+- rule: Respond to 'Who are you'
+  steps:
+    - intent: who_are_you
+    - action: utter_who_are_you

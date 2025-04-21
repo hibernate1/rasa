@@ -1,0 +1,30 @@
+version: "3.1"
+
+intents:
+  - greet
+  - who_are_you
+  - how_are_you
+  - ask_question
+
+actions:
+  - utter_greet
+  - utter_how_are_you
+  - utter_ask_question
+  - action_query_pdf_knowledge
+
+responses:
+  utter_ask_question:
+    - text: "Sure, what would you like to know from the document?"
+  utter_greet:
+    - text: "Hello! How can I assist you today?"
+    - text: "Hi there! What can I do for you?"
+  utter_how_are_you:
+    - text: "I'm doing great, thank you for asking!"
+    - text: "I'm just a bot, but I'm functioning well!"
+  utter_who_are_you:
+    - text: "I'm your friendly assistant, here to help you with anything you need."
+    - text: "I'm a chatbot created to assist you with your queries."    
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

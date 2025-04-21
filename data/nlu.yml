@@ -1,0 +1,39 @@
+version: "3.1"
+
+nlu:
+- intent: greet
+  examples: |
+    - hi
+    - hello
+    - hey there
+    - greetings
+    - howdy
+    - hi there
+    - long time no see
+    - hello again
+    - good day
+- intent: how_are_you
+  examples: |
+    - how are you
+    - how's it going
+    - how do you do
+    - what's up
+    - how are you doing
+- intent: who_are_you
+  examples: |
+    - who are you
+    - what is your name
+    - who am I talking to
+    - what's your name
+- intent: ask_question
+  examples: |
+    - What is machine learning?
+    - Tell me about AI
+    - Explain policy
+    - What does the document say about ethics?
+    - What is Python used for?
+    - Can you describe the introduction to the document?
+    - What is the conclusion in the policy?
+    - Give me a summary of the document
+    - Tell me about the topic on page 5
+    - What is discussed in section 2?

@@ -1,0 +1,15 @@
+version: "3.1"
+
+stories:
+- story: Ask a question from PDF
+  steps:
+    - intent: ask_question
+    - action: action_query_pdf_knowledge
+
+
+- story: Greet and ask how the bot is
+  steps:
+    - intent: greet
+    - action: utter_greet
+    - intent: how_are_you
+    - action: utter_how_are_you    
