@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rasa Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f6fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    .chat-container {
+      width: 400px;
+      margin: 50px auto;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-window {
+      padding: 15px;
+      height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+
+    .user {
+      align-self: flex-end;
+      background-color: #d1f0ff;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background-color: #eaeaea;
+    }
+
+    .input-container {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+    }
+
+    .input-container input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .input-container button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      border: none;
+      background-color: #40739e;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-window" id="chat-window"></div>
+    <div class="input-container">
+      <input type="text" id="user-input" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const inputField = document.getElementById("user-input");
+      const chatWindow = document.getElementById("chat-window");
+      const message = inputField.value.trim();
+      if (!message) return;
+
+      // Add user message
+      const userMsg = document.createElement("div");
+      userMsg.className = "message user";
+      userMsg.textContent = message;
+      chatWindow.appendChild(userMsg);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      inputField.value = "";
+
+      // Send message to Rasa server
+      const response = await fetch("http://localhost:5005/webhooks/rest/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender: "user", message }),
+      });
+
+      const botMessages = await response.json();
+
+      botMessages.forEach((msg) => {
+        const botMsg = document.createElement("div");
+        botMsg.className = "message bot";
+        botMsg.textContent = msg.text;
+        chatWindow.appendChild(botMsg);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      });
+    }
+  </script>
+</body>
+</html>

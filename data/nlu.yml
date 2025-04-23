@@ -27,7 +27,8 @@ nlu:
     - what's your name
 - intent: ask_question
   examples: |
-    - What is machine learning?
+    - What is ?
+    - what is the capital
     - Tell me about AI
     - Explain policy
     - What does the document say about ethics?
@@ -37,3 +38,33 @@ nlu:
     - Give me a summary of the document
     - Tell me about the topic on page 5
     - What is discussed in section 2?
+
+- intent: ask_report
+  examples: |
+    - Reddot Digital?
+    - Tell me about Reddot
+    - CEO Reddot
+    - Hasib Mustabsir
+    - Who is the CPO of Reddot
+    - Zia 
+    - Zia Haider
+    - Service of Reddot
+    - reddot provide
+    - summary
+    - about reddot    
+
+
+
+- intent: submit_complaint
+  examples: |
+    - I want to complain
+    - I have an issue
+    - I'd like to file a complaint
+    - there's a problem I need to report
+
+
+- intent: solve_math
+  examples: |
+    - What is 5 plus 3?
+    - Solve 12 * 4
+    - Calculate 15 divided by 3    

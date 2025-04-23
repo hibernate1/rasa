@@ -1,0 +1,66 @@
+{
+  "type": "MaxHistoryTrackerFeaturizer",
+  "state_featurizer": {
+    "action_texts": [],
+    "entity_tag_specs": [],
+    "feature_states": {
+      "intent": {
+        "ask_question": 0,
+        "back": 1,
+        "greet": 2,
+        "how_are_you": 3,
+        "nlu_fallback": 4,
+        "out_of_scope": 5,
+        "restart": 6,
+        "session_start": 7,
+        "submit_complaint": 8,
+        "who_are_you": 9
+      },
+      "action_name": {
+        "action_listen": 0,
+        "action_restart": 1,
+        "action_session_start": 2,
+        "action_default_fallback": 3,
+        "action_deactivate_loop": 4,
+        "action_revert_fallback_events": 5,
+        "action_default_ask_affirmation": 6,
+        "action_default_ask_rephrase": 7,
+        "action_two_stage_fallback": 8,
+        "action_unlikely_intent": 9,
+        "action_back": 10,
+        "...": 11,
+        "action_extract_slots": 12,
+        "utter_greet": 13,
+        "utter_how_are_you": 14,
+        "utter_ask_question": 15,
+        "action_query_pdf_knowledge": 16,
+        "action_submit_complaint": 17,
+        "utter_ask_complaint_details": 18,
+        "utter_ask_name": 19,
+        "utter_ask_phone": 20,
+        "utter_ask_system": 21,
+        "utter_complaint_summary": 22,
+        "utter_submit": 23,
+        "utter_who_are_you": 24,
+        "complaint_form": 25
+      },
+      "entities": {
+        "complaint_details": 0,
+        "name": 1,
+        "phone": 2,
+        "system": 3
+      },
+      "slots": {
+        "system_0": 0,
+        "name_0": 1,
+        "phone_0": 2,
+        "complaint_details_0": 3
+      },
+      "active_loop": {
+        "complaint_form": 0
+      }
+    }
+  },
+  "remove_duplicates": true,
+  "max_history": 5
+}
