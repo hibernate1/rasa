@@ -1,0 +1,11 @@
+{
+  "0": "ask_question",
+  "1": "ask_report",
+  "2": "greet",
+  "3": "how_are_you",
+  "4": "provide_complaint_details",
+  "5": "provide_system",
+  "6": "solve_math",
+  "7": "submit_complaint",
+  "8": "who_are_you"
+}

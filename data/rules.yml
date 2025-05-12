@@ -21,31 +21,47 @@ rules:
       - intent: who_are_you
       - action: utter_who_are_you
 
-  
-
-  
-  - rule: Solve math problems 
+  - rule: Solve math problems
     steps:
       - intent: solve_math
       - action: action_solve_math
 
-  - rule: Get Company details 
-    steps:
-      - intent: ask_report
-      - action: action_query_pdf_knowledge    
-
-
-  - rule: Start complaint form and collect data
-    steps:
-      - intent: submit_complaint
-      - action: complaint_form  # Start the complaint form
-      - active_loop: complaint_form  # Keep the form active until all slots are filled
-
-  # Rule to handle form completion and submit the complaint
- 
- 
   - rule: LLM fallback when no intent matched
     steps:
-    - intent: nlu_fallback
-    - action: action_fallback_llm
-  
+      - intent: nlu_fallback
+      - action: action_fallback_llm
+
+  #complaint rules
+
+  # - rule: Handle complaint
+  #   steps:
+  #     - intent: submit_complaint
+  #     - action: complaint_form
+  #     - active_loop: complaint_form
+
+  # - rule: Submit complaint
+  #   condition:
+  #     - active_loop: complaint_form
+  #   steps:
+  #     - action: complaint_form
+  #     - active_loop: null
+  #     - action: utter_submit
+  #     - action: action_submit_complaint
+
+  - rule: Activate complaint form
+    steps:
+      - intent: submit_complaint
+      - action: complaint_form
+      - active_loop: complaint_form
+
+  - rule: Submit complaint
+    condition:
+      - active_loop: complaint_form
+    steps:
+      - action: complaint_form
+      - active_loop: null
+      - action: utter_submit
+      - action: action_submit_complaint
+
+      
+

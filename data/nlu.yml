@@ -53,18 +53,62 @@ nlu:
     - summary
     - about reddot    
 
-
-
-- intent: submit_complaint
-  examples: |
-    - I want to complain
-    - I have an issue
-    - I'd like to file a complaint
-    - there's a problem I need to report
-
-
 - intent: solve_math
   examples: |
     - What is 5 plus 3?
     - Solve 12 * 4
     - Calculate 15 divided by 3    
+#complain management
+
+- intent: submit_complaint
+  examples: |
+    - I want to file a complaint
+      - I have a complaint
+      - Report an issue
+      - Submit a complaint about [SVS](system_name)
+      - I need to complain about [SingleApp](system_name)
+      - Problem with [Binge](system_name)
+      - There's an issue
+
+- intent: provide_system
+  examples: |
+    - SVS
+    - SingleApp
+    - Binge
+
+- intent: provide_complaint_details
+  examples: |
+    - The app crashes every time I log in.
+    - The system is very slow.
+    - I cannot access my account.   
+
+- lookup: nlu_system_name
+  examples: |
+    - SVS
+    - svs
+    - SingleApp
+    - singleapp
+    - Binge
+    - binge
+
+- synonym: svs
+  examples: |
+    - SVS
+    - svs
+
+- synonym: singleapp
+  examples: |
+    - SingleApp
+    - singleapp
+
+- synonym: binge
+  examples: |
+    - Binge
+    - binge         
+
+
+
+  
+
+
+

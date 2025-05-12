@@ -6,41 +6,39 @@ intents:
   - how_are_you
   - ask_question
   - submit_complaint
-
+  - provide_system
+  - system_name
 entities:
-  - system
-  - name
-  - phone
+  - system_name
   - complaint_details
 
 slots:
-  system:
+  system_name:
     type: text
-    influence_conversation: false
     mappings:
+      - type: from_entity
+        entity: system_name
       - type: from_text
-  name:
-    type: text
-    influence_conversation: false
-    mappings:
-      - type: from_text
-  phone:
-    type: text
-    influence_conversation: false
-    mappings:
-      - type: from_text
+        conditions:
+          - active_loop: complaint_form
+            requested_slot: system_name
+      
+
   complaint_details:
     type: text
-    influence_conversation: false
+    influence_conversation: true
     mappings:
+      - type: from_entity
+        entity: complaint_details
       - type: from_text
+        conditions:
+          - active_loop: complaint_form
+            requested_slot: complaint_details
 
 forms:
   complaint_form:
     required_slots:
-      - system
-      - name
-      - phone
+      - system_name
       - complaint_details
 
 actions:
@@ -48,10 +46,9 @@ actions:
   - utter_how_are_you
   - utter_ask_question
   - action_query_pdf_knowledge
-  - action_submit_complaint
   - action_solve_math
   - action_fallback_llm
-
+  - action_submit_complaint
 
 responses:
   utter_ask_question:
@@ -62,23 +59,16 @@ responses:
     - text: "I'm doing great, thank you for asking!"
   utter_who_are_you:
     - text: "I'm your friendly assistant, here to help you with anything you need."
-  utter_ask_system:
-    - text: "Which system do you want to complain about?"
-  utter_ask_name:
-    - text: "May I know your name?"
-  utter_ask_phone:
-    - text: "Please provide your mobile number."
+
+  #complaint section  
+  utter_ask_system_name:
+    - text: "Which system do you have a complaint about?\n1. SVS\n2. SingleApp\n3. Binge"
+
   utter_ask_complaint_details:
-    - text: "Please describe the issue you're facing."
-  utter_complaint_summary:
-    - text: |
-        Here's a summary of your complaint:
-        - System: {system}
-        - Name: {name}
-        - Phone: {phone}
-        - Details: {complaint_details}
+    - text: "Please describe your complaint."
+
   utter_submit:
-    - text: "Thank you. We’ve received your complaint and will look into it."
+    - text: "Thanks! Submitting your complaint now..."
 
 session_config:
   session_expiration_time: 60

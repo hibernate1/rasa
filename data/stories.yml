@@ -18,6 +18,18 @@ stories:
       - intent : ask_report
       - action : action_query_pdf_knowledge    
 
+  # - story: Submit complaint form manually
+  #   steps:
+  #     - intent: submit_complaint
+  #     - action: complaint_form
+  #     - active_loop: complaint_form
+  #     - slot_was_set:
+  #         - requested_slot: system_name
+  #     - slot_was_set:
+  #         - requested_slot: complaint_details
+  #     - action: utter_submit
+  #     - action: action_submit_complaint    
+
    
 
       

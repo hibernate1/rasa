@@ -74,21 +74,17 @@ class ActionSubmitComplaint(Action):
             tracker: Tracker,
             domain: Dict[str, Any]) -> List[Dict[str, Any]]:
 
-        system = tracker.get_slot("system")
-        name = tracker.get_slot("name")
-        phone = tracker.get_slot("phone")
+        system = tracker.get_slot("platform")
         complaint_details = tracker.get_slot("complaint_details")
 
-        summary = f"Here's a summary of your complaint:\n- System: {system}\n- Name: {name}\n- Phone: {phone}\n- Details: {complaint_details}"
+        summary = f"Here's a summary of your complaint:\n- System: {system}\n - Details: {complaint_details}"
         dispatcher.utter_message(text=summary)
 
         # Replace this with your actual API endpoint
         url = "https://your-api.com/submit-complaint"
         data = {
             "system": system,
-            "name": name,
-            "phone": phone,
-            "details": complaint_details
+            "complaint_detailsme": complaint_details
         }
 
         try:
@@ -225,3 +221,110 @@ class ActionFallbackLLM(Action):
         import re
         keywords = re.findall(r"\b[A-Z][a-z]*\b", question)
         return keywords[-1] if keywords else question.split()[-1]
+
+
+
+
+    
+from rasa_sdk import Action, Tracker
+from rasa_sdk.executor import CollectingDispatcher
+
+class ActionGreetUser(Action):
+    def name(self):
+        return "action_greet_user"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker, domain: dict):
+        dispatcher.utter_message("Hello from Rasa action!")
+        return []
+
+import requests
+import logging
+from rasa_sdk import Action, Tracker
+from rasa_sdk.executor import CollectingDispatcher
+from rasa_sdk.events import SlotSet
+
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+class ActionSubmitComplaint(Action):
+    def name(self):
+        return "action_submit_complaint"
+
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: dict):
+        system = tracker.get_slot("system_name")
+        details = tracker.get_slot("complaint_details")
+
+        # Step 1: Call login API
+        login_url = "http://13.234.10.90:8080/api/v1/auth/login"
+        login_payload = {
+            "email": "admin@admin.com",
+            "password": "1234"
+        }
+
+        try:
+            login_response = requests.post(login_url, json=login_payload)
+            login_response.raise_for_status()
+            token = login_response.json().get("token")
+
+            if not token:
+                logger.error("Login failed: No token received.")
+                dispatcher.utter_message(text="Login failed: No token received.")
+                return []
+
+        except requests.RequestException as e:
+            logger.error(f"Login error: {str(e)}")
+            dispatcher.utter_message(text=f"Login error: {str(e)}")
+            return []
+
+        # Step 2: Submit complaint using token
+        submit_url = "http://13.234.10.90:8080/api/v1/ticket/create"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        complaint_payload = {
+            "name": "ovi",
+            "title": system + " issue",
+            "email": "buetovi@gmail.com",
+            "detail": [
+                {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": details,
+                            "styles": {}
+                        }
+                    ],
+                    "children": []
+                }
+            ],
+            "priority": "medium",
+            "type": "Bug",
+            "createdBy": {
+                "id": "7da7b41c-240c-4aa8-94dd-52c9e3981280",
+                "name": "admin",
+                "email": "admin@admin.com"
+            }
+        }
+
+        try:
+            submit_response = requests.post(submit_url, json=complaint_payload, headers=headers)
+            submit_response.raise_for_status()
+            logger.info(f"Complaint submitted successfully for {system}.")
+            dispatcher.utter_message(text=f"Complaint submitted successfully for {system}.")
+
+        except requests.RequestException as e:
+            logger.error(f"Failed to submit complaint: {str(e)}")
+            dispatcher.utter_message(text=f"Failed to submit complaint: {str(e)}")
+            return [SlotSet("system_name", None), SlotSet("complaint_details", None)]
+
+        # Reset the slots
+        return [SlotSet("system_name", None), SlotSet("complaint_details", None)]
