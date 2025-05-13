@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.ENV/
+
+# Rasa model files
+models/
+*.tar.gz
+
+# Logs
+logs/
+*.log
+
+# Rasa test reports and results
+results/
+*.json
+
+# Rasa temporary files
+.rasa/
+.cache/
+
+# VS Code and PyCharm settings
+.vscode/
+.idea/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.*
+
+# Mac and OS junk
+.DS_Store
+Thumbs.db

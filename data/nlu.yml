@@ -39,6 +39,14 @@ nlu:
     - Tell me about the topic on page 5
     - What is discussed in section 2?
 
+- intent: query_robi_info
+  examples: |
+    - Who owns Robi?
+    - What is Robi Power?
+    - Tell me about Binge
+    - What services does Robi offer?
+    - What is Robi?    
+
 - intent: ask_report
   examples: |
     - Reddot Digital?

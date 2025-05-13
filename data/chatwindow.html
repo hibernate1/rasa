@@ -5,77 +5,182 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rasa Chatbot</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f6fa;
+    /* General Reset */
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
+    /* Background Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background: linear-gradient(45deg, rgba(255, 0, 0, 0.8), rgba(255, 100, 100, 0.7)), 
+                  radial-gradient(circle, rgba(255, 0, 0, 0.7), rgba(200, 50, 50, 0.6));
+      background-size: 400% 400%;
+      animation: backgroundMove 8s ease infinite;
+    }
+
+    /* Animation for Background */
+    @keyframes backgroundMove {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    /* Chat Container */
     .chat-container {
-      width: 400px;
-      margin: 50px auto;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      background-color: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 480px;
+      height: 650px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       display: flex;
       flex-direction: column;
     }
 
+    /* Chat Window */
     .chat-window {
-      padding: 15px;
-      height: 400px;
+      flex-grow: 1;
+      padding: 20px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
+      gap: 15px;
+      position: relative;
     }
 
     .message {
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 12px 18px;
+      border-radius: 20px;
       max-width: 80%;
+      word-wrap: break-word;
+      font-size: 14px;
+      line-height: 1.5;
+      display: inline-block;
+      animation: fadeIn 0.4s ease-in-out;
+      margin-bottom: 8px;
     }
 
     .user {
+      background-color: #4a90e2;
+      color: white;
       align-self: flex-end;
-      background-color: #d1f0ff;
+      border-radius: 20px 20px 0 20px;
     }
 
     .bot {
+      background-color: #f0f0f0;
+      color: #333;
       align-self: flex-start;
-      background-color: #eaeaea;
+      border-radius: 20px 20px 20px 0;
     }
 
+    /* Input Container */
     .input-container {
       display: flex;
       padding: 10px;
-      border-top: 1px solid #ddd;
+      border-top: 1px solid #e0e0e0;
+      background-color: #fff;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .input-container input {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 25px;
       outline: none;
+      font-size: 14px;
+      transition: all 0.3s ease-in-out;
     }
 
     .input-container button {
+      padding: 12px 20px;
       margin-left: 10px;
-      padding: 10px 20px;
+      background-color: #4a90e2;
       border: none;
-      background-color: #40739e;
-      color: #fff;
-      border-radius: 5px;
+      border-radius: 25px;
+      color: white;
+      font-size: 14px;
       cursor: pointer;
+      transition: background-color 0.3s ease-in-out;
+    }
+
+    .input-container button:hover {
+      background-color: #357ABD;
+    }
+
+    .input-container button:active {
+      background-color: #2c6a9d;
+    }
+
+    /* Typing Indicator */
+    .typing-indicator {
+      position: absolute;
+      bottom: 70px;
+      left: 20px;
+      font-size: 14px;
+      color: #4a90e2;
+      display: none;
+    }
+
+    .typing-indicator span {
+      display: inline-block;
+      margin-left: 3px;
+      animation: typingAnimation 1s infinite ease-in-out;
+    }
+
+    .typing-indicator span:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes typingAnimation {
+      0% { content: '.'; }
+      33% { content: '..'; }
+      66% { content: '...'; }
+      100% { content: '.'; }
     }
   </style>
 </head>
 <body>
   <div class="chat-container">
-    <div class="chat-window" id="chat-window"></div>
+    <div class="chat-window" id="chat-window">
+      <div class="typing-indicator" id="typing-indicator">
+        <span>.</span><span>.</span><span>.</span>
+      </div>
+    </div>
     <div class="input-container">
       <input type="text" id="user-input" placeholder="Type your message..." />
       <button onclick="sendMessage()">Send</button>
@@ -83,19 +188,24 @@
   </div>
 
   <script>
+    // Function to send a message
     async function sendMessage() {
       const inputField = document.getElementById("user-input");
       const chatWindow = document.getElementById("chat-window");
       const message = inputField.value.trim();
       if (!message) return;
 
-      // Add user message
+      // Add user message with animation
       const userMsg = document.createElement("div");
       userMsg.className = "message user";
       userMsg.textContent = message;
       chatWindow.appendChild(userMsg);
       chatWindow.scrollTop = chatWindow.scrollHeight;
       inputField.value = "";
+
+      // Show typing indicator while waiting for the bot's response
+      const typingIndicator = document.getElementById("typing-indicator");
+      typingIndicator.style.display = "block";
 
       // Send message to Rasa server
       const response = await fetch("http://localhost:5005/webhooks/rest/webhook", {
@@ -106,6 +216,9 @@
 
       const botMessages = await response.json();
 
+      // Hide typing indicator and show bot's messages
+      typingIndicator.style.display = "none";
+      
       botMessages.forEach((msg) => {
         const botMsg = document.createElement("div");
         botMsg.className = "message bot";

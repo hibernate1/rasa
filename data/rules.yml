@@ -3,8 +3,8 @@ version: "3.1"
 rules:
   - rule: Answer PDF-based question
     steps:
-      - intent: ask_question
-      - action: action_fallback_llm
+      - intent: ask_report
+      - action: action_query_pdf_knowledge
 
   - rule: Greet the user
     steps:
@@ -30,6 +30,15 @@ rules:
     steps:
       - intent: nlu_fallback
       - action: action_fallback_llm
+  - rule: Ask Question to Wiki
+    steps:
+      - intent: ask_question
+      - action: action_fallback_llm   
+
+  - rule: Ask robi info scrap from Wiki
+    steps:
+      - intent: query_robi_info
+      - action: action_query_or_scrape_robi        
 
   #complaint rules
 

@@ -1,7 +1,6 @@
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from langchain.vectorstores import Chroma
-from langchain.embeddings import HuggingFaceEmbeddings
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
@@ -19,51 +18,118 @@ import requests
 
 from typing import Any, Text, Dict, List
 from transformers import pipeline
-class ActionQueryPdfKnowledge(Action):
 
-    def name(self):
+from typing import Any, Text, Dict, List
+from transformers import pipeline
+from rasa_sdk import Action
+from rasa_sdk.events import EventType
+from rasa_sdk.executor import CollectingDispatcher
+from rasa_sdk.interfaces import Tracker 
+from langchain_chroma import Chroma
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import CharacterTextSplitter
+import os
+
+from typing import Any, Text, Dict, List
+from rasa_sdk import Action, Tracker
+from rasa_sdk.executor import CollectingDispatcher
+from rasa_sdk.events import EventType
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import Chroma
+import chromadb
+from sentence_transformers import SentenceTransformer
+import fitz  # PyMuPDF
+from rasa_sdk import Action, Tracker
+from rasa_sdk.executor import CollectingDispatcher
+from chromadb.errors import InvalidCollectionException
+
+# Initialize Chroma client and embedding model
+client = chromadb.Client()
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+collection_name = "pdf_collection"
+
+# Try to get or create the collection
+try:
+    collection = client.get_collection(collection_name)
+except InvalidCollectionException:
+    # If collection doesn't exist, create it
+    collection = client.create_collection(collection_name)
+    print(f"Collection {collection_name} created.")
+
+# Function to extract text from a PDF
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with fitz.open(pdf_path) as doc:
+        for page in doc:
+            text += page.get_text("text")
+    return text
+
+# Function to add PDF to Chroma collection
+def add_pdf_to_chroma(pdf_path, collection):
+    pdf_text = extract_text_from_pdf(pdf_path)
+    if pdf_text:
+        doc_id = pdf_path.split("/")[-1]  # Use the PDF file name as the ID
+        embedding = embedding_model.encode(pdf_text).tolist()  # Encode the PDF text into an embedding
+        collection.add(
+            documents=[pdf_text],
+            metadatas=[{"source": pdf_path}],
+            ids=[doc_id],
+            embeddings=[embedding]
+        )
+        print(f"Added {pdf_path} to Chroma.")
+    else:
+        print(f"No text found in {pdf_path}.")
+
+# Function to query the collection
+def query_collection(query_text, collection, top_k=3):
+    embedding = embedding_model.encode(query_text).tolist()  # Generate embedding for the query
+    results = collection.query(
+        query_embeddings=[embedding],
+        n_results=top_k  # Limit to top_k results
+    )
+    return results
+
+# Action class for querying PDF knowledge
+class ActionQueryPdfKnowledge(Action):
+    
+    def name(self) -> str:
         return "action_query_pdf_knowledge"
 
     def run(self, dispatcher: CollectingDispatcher,
             tracker: Tracker,
-            domain: dict):
-
+            domain: dict) -> list:
+        
         query = tracker.latest_message.get("text")  # Get the query from the user message
 
-        # Load and chunk the PDF document
-        try:
-            loader = PyPDFLoader("sample.pdf")  # Adjust the path if necessary
-            pages = loader.load()
-            text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)  # Split text into chunks
-            docs = text_splitter.split_documents(pages)
-        except Exception as e:
-            dispatcher.utter_message(text="Error loading or processing the PDF document.")
+        if not query:
+            dispatcher.utter_message(text="Please provide a query.")
             return []
 
-        # Use HuggingFace Embeddings for document embeddings
-        embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        # Process PDF (you can call this before querying if needed)
+        pdf_file_path = "sample.pdf"  # Adjust the path as necessary
+        add_pdf_to_chroma(pdf_file_path, collection)
 
-        # Initialize ChromaDB for document storage
-        db_dir = "./chroma_storage"  # Directory for Chroma storage
+        # Query the collection
         try:
-            db = Chroma.from_documents(docs, embeddings, persist_directory=db_dir)  # Use Chroma for document search
-        except Exception as e:
-            dispatcher.utter_message(text="Error setting up ChromaDB.")
-            return []
+            query_results = query_collection(query, collection)
 
-        # Search for the answer based on the user query
-        try:
-            results = db.similarity_search(query, k=1)  # Get the top result
-            if results:
-                answer = results[0].page_content  # Extract the content from the top result
+            # Check if any results are returned
+            if query_results and query_results['documents']:
+                answer = query_results['documents'][0]  # Get the content from the top result
+                # Ensure the response is a single string
+                answer = str(answer)
+                dispatcher.utter_message(text=answer)
             else:
-                answer = "Sorry, I couldn't find anything relevant in the document."
+                dispatcher.utter_message(text="Sorry, I couldn't find anything relevant in the document.")
+        
         except Exception as e:
-            answer = "Error performing the document search."
+            dispatcher.utter_message(text=f"Error performing the document search: {str(e)}")
 
-        # Respond with the answer
-        dispatcher.utter_message(text=answer)
         return []
+
 
 
 class ActionSubmitComplaint(Action):
@@ -328,3 +394,84 @@ class ActionSubmitComplaint(Action):
 
         # Reset the slots
         return [SlotSet("system_name", None), SlotSet("complaint_details", None)]
+
+from rasa_sdk import Action, Tracker
+from rasa_sdk.executor import CollectingDispatcher
+import os
+import requests
+from bs4 import BeautifulSoup
+from transformers import AutoTokenizer, AutoModel
+import torch
+from langchain.vectorstores import Chroma
+from langchain.text_splitter import CharacterTextSplitter
+
+class HuggingFaceEmbeddings:
+    def __init__(self, model_name):
+        self.model_name = model_name
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name)
+
+    def embed_query(self, query: str):
+        """Generate embedding for a query string."""
+        inputs = self.tokenizer(query, return_tensors="pt", truncation=True, padding=True)
+        with torch.no_grad():
+            embeddings = self.model(**inputs).last_hidden_state.mean(dim=1).squeeze()
+        return embeddings.numpy()
+
+    def embed_documents(self, documents: list):
+        """Generate embeddings for a list of documents."""
+        embeddings = []
+        for doc in documents:
+            inputs = self.tokenizer(doc.page_content, return_tensors="pt", truncation=True, padding=True)
+            with torch.no_grad():
+                embeddings.append(self.model(**inputs).last_hidden_state.mean(dim=1).squeeze().numpy())
+        return embeddings
+
+class ActionQueryOrScrapeRobi(Action):
+    def name(self):
+        return "action_query_or_scrape_robi"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: dict):
+
+        persist_dir = "./chroma"
+        query = tracker.latest_message.get("text")
+
+        # Use Hugging Face for embeddings (free alternative)
+        model_name = "sentence-transformers/all-MiniLM-L6-v2"
+        
+        # Create the HuggingFace embedding object
+        embedding = HuggingFaceEmbeddings(model_name=model_name)
+
+        # If ChromaDB doesn't exist yet, scrape and store
+        if not os.path.exists(persist_dir) or not os.listdir(persist_dir):
+            dispatcher.utter_message("Fetching Robi info from Wikipedia. Please wait...")
+
+            # Scrape
+            url = "https://en.wikipedia.org/wiki/Robi_(company)"
+            response = requests.get(url)
+            soup = BeautifulSoup(response.content, "html.parser")
+            content = soup.find("div", {"class": "mw-parser-output"})
+            paragraphs = content.find_all("p")
+            text = "\n".join([p.get_text() for p in paragraphs if p.get_text(strip=True)])
+
+            # Chunk and embed
+            splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+            docs = splitter.create_documents([text])
+
+            # Use Hugging Face Embeddings
+            vectorstore = Chroma.from_documents(
+                docs, embedding.embed_documents, persist_directory=persist_dir
+            )
+            vectorstore.persist()
+            db = vectorstore
+        else:
+            db = Chroma(persist_directory=persist_dir, embedding_function=embedding.embed_query)
+
+        # Query
+        results = db.similarity_search(query, k=2)
+        answer = "\n".join([res.page_content for res in results])
+
+        dispatcher.utter_message(text=answer or "Sorry, I couldn't find relevant information.")
+        return []

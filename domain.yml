@@ -8,6 +8,7 @@ intents:
   - submit_complaint
   - provide_system
   - system_name
+  - query_robi_info
 entities:
   - system_name
   - complaint_details
@@ -49,6 +50,7 @@ actions:
   - action_solve_math
   - action_fallback_llm
   - action_submit_complaint
+  - action_query_or_scrape_robi
 
 responses:
   utter_ask_question:

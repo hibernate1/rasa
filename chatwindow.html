@@ -33,13 +33,13 @@
     }
 
     .chat-container {
-      width: 700px;
+      width: 500px;
       max-width: 95%;
       margin: 20px auto;
       background-color: #111;
-      border: 2px solid #00ff88;
-      border-radius: 10px;
-      box-shadow: 0 0 20px #00ff88;
+      border-radius: 20px;
+      padding: 10px;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.7);
       display: flex;
       flex-direction: column;
     }
@@ -51,6 +51,7 @@
       display: flex;
       flex-direction: column;
       background: linear-gradient(to bottom, #0a0a0a, #111);
+      border-radius: 15px;
     }
 
     .message {
@@ -65,71 +66,104 @@
     .user {
       align-self: flex-end;
       background-color: #002200;
-      border: 1px solid #00ff88;
       box-shadow: 0 0 5px #00ff88;
     }
 
     .bot {
       align-self: flex-start;
       background-color: #001100;
-      border: 1px solid #00ff88;
       box-shadow: 0 0 5px #00ff88;
     }
 
     .input-container {
       display: flex;
       padding: 10px;
-      border-top: 2px solid #00ff88;
       background-color: #000;
+      border-radius: 0 0 10px 10px;
     }
 
     .input-container input {
       flex: 1;
       background-color: #000;
       color: #00ff88;
-      border: 1px solid #00ff88;
       padding: 10px;
       border-radius: 5px;
       outline: none;
       font-family: inherit;
+      border: 2px solid #00ff88;
+      box-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .input-container input:focus {
+      border: 2px solid #00cc44;
+      box-shadow: 0 0 8px rgba(0, 204, 68, 0.7);
     }
 
     .input-container button {
       margin-left: 10px;
       padding: 10px 20px;
-      border: 1px solid #00ff88;
       background-color: #000;
       color: #00ff88;
       border-radius: 5px;
       cursor: pointer;
       font-family: inherit;
       box-shadow: 0 0 10px #00ff88;
+      border: 2px solid #00ff88;
+      transition: all 0.3s ease;
     }
 
     .input-container button:hover {
       background-color: #002200;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.7);
     }
 
+    /* Waving dots loader */
     .loader {
       align-self: flex-start;
       margin: 10px 0;
-      width: 30px;
-      height: 30px;
-      border: 4px solid #00ff88;
-      border-top: 4px solid transparent;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .loader div {
+      width: 10px;
+      height: 10px;
+      margin: 0 5px;
+      border-radius: 50%;
+      background-color: #00ff88;
+      animation: wave 1.2s infinite ease-in-out;
+    }
+
+    .loader div:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .loader div:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loader div:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes wave {
+      0% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+      100% {
+        transform: translateY(0);
+      }
     }
 
     ::selection {
       background: #00ff88;
       color: #000;
     }
-
   </style>
 </head>
 <body>
@@ -148,6 +182,15 @@
     const inputField = document.getElementById("user-input");
     const chatWindow = document.getElementById("chat-window");
 
+    // Function to add the welcome message when the page loads
+    window.onload = function() {
+      const welcomeMessage = document.createElement("div");
+      welcomeMessage.className = "message bot";
+      welcomeMessage.textContent = "I'm your friendly assistant, here to help you with anything you need.";
+      chatWindow.appendChild(welcomeMessage);
+      chatWindow.scrollTop = chatWindow.scrollHeight; // Scroll to show the latest message
+    };
+
     async function sendMessage() {
       const message = inputField.value.trim();
       if (!message) return;
@@ -163,6 +206,7 @@
       // Show loader
       const loader = document.createElement("div");
       loader.className = "loader";
+      loader.innerHTML = '<div></div><div></div><div></div>'; // Add 3 dots
       chatWindow.appendChild(loader);
       chatWindow.scrollTop = chatWindow.scrollHeight;
 
